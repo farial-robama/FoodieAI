@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #E8593C;
+  --color-primary-hover: #D14B30;
+  --color-secondary: #1D9E75;
+  --color-secondary-hover: #178663;
+  --color-warm: #FBF8F5;
+  --color-dark: #1C1917;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-warm);
+    color: var(--color-dark);
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .dark body {
+    background-color: var(--color-dark);
+    color: #F5F3F0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .container-pad {
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-pad { padding-inline: 1.5rem; }
+  }
+  @media (min-width: 1024px) {
+    .container-pad { padding-inline: 2rem; }
+  }
+  .section-pad {
+    padding-block: 4rem;
+  }
+  @media (min-width: 768px) {
+    .section-pad { padding-block: 5rem; }
+  }
 }
