@@ -1,14 +1,27 @@
+import HeroSection from "@/components/sections/HeroSection";
+import CategoriesSection from "@/components/sections/CategoriesSection";
+import FeaturedSection from "@/components/sections/FeaturedSection";
+import HowItWorks from "@/components/sections/HowItWorks";
+import StatsSection from "@/components/sections/StatsSection";
+import TopRatedSection from "@/components/sections/TopRatedSection";
+import TestimonialsSection from "@/components/sections/TestimonialsSection";
+import BlogPreview from "@/components/sections/BlogPreview";
+import NewsletterSection from "@/components/sections/NewsletterSection";
+import CTASection from "@/components/sections/CTASection";
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-stone-900 dark:text-white mb-4">
-          Foodie<span style={{ color: "var(--color-primary)" }}>AI</span>
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400">
-          Phase 2 complete — Navbar, Footer and all UI components ready.
-        </p>
-      </div>
-    </div>
+    <main>
+      <HeroSection />
+      <CategoriesSection />
+      <FeaturedSection />
+      <HowItWorks />
+      <StatsSection />
+      <TopRatedSection />
+      <TestimonialsSection />
+      <BlogPreview />
+      <NewsletterSection />
+      <CTASection />
+    </main>
   );
 }
