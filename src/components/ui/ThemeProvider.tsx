@@ -3,32 +3,61 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
-const ThemeContext = createContext<{
+interface ThemeContextType {
   theme: Theme;
   setTheme: (t: Theme) => void;
   toggle: () => void;
-}>({ theme: "light", setTheme: () => {}, toggle: () => {} });
+}
+
+const ThemeContext = createContext<ThemeContextType>({
+  theme: "light",
+  setTheme: () => {},
+  toggle: () => {},
+});
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-    const initial = stored ?? preferred;
+    // Read stored theme or system preference
+    const stored = localStorage.getItem("foodieai-theme") as Theme | null;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initial: Theme = stored ?? (systemDark ? "dark" : "light");
+
     setThemeState(initial);
-    document.documentElement.classList.toggle("dark", initial === "dark");
+    applyTheme(initial);
+    setMounted(true);
   }, []);
+
+  const applyTheme = (t: Theme) => {
+    const root = document.documentElement;
+    if (t === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  };
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
-    localStorage.setItem("theme", t);
-    document.documentElement.classList.toggle("dark", t === "dark");
+    localStorage.setItem("foodieai-theme", t);
+    applyTheme(t);
   };
 
-  const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggle = () => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+  };
+
+  // Prevent flash of wrong theme
+  if (!mounted) {
+    return (
+      <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
+        <div style={{ visibility: "hidden" }}>{children}</div>
+      </ThemeContext.Provider>
+    );
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggle }}>

@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
@@ -8,22 +9,29 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon, className, ...props }, ref) => {
+  ({ label, error, icon, className, id, name, ...props }, ref) => {
+    const inputId = id || name || Math.random().toString(36).slice(2);
+
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label className="text-sm font-medium text-stone-700 dark:text-stone-300">
+          <label
+            htmlFor={inputId}
+            className="text-sm font-medium text-stone-700 dark:text-stone-300"
+          >
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
               {icon}
             </div>
           )}
           <input
             ref={ref}
+            id={inputId}
+            name={name}
             className={cn(
               "w-full rounded-xl border border-stone-200 dark:border-stone-700",
               "bg-white dark:bg-stone-900",
@@ -43,5 +51,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+
 Input.displayName = "Input";
 export default Input;
