@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
@@ -9,24 +10,23 @@ import { IRestaurant } from "@/types";
 import { CUISINES, LOCATIONS } from "@/constants";
 import { useDebounce } from "@/hooks/useDebounce";
 
-export default function ExplorePage() {
+function ExploreContent() {
   const searchParams = useSearchParams();
-  const router       = useRouter();
 
   const [restaurants, setRestaurants] = useState<IRestaurant[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [total, setTotal]             = useState(0);
-  const [page, setPage]               = useState(1);
-  const [totalPages, setTotalPages]   = useState(1);
+  const [loading,     setLoading]     = useState(true);
+  const [total,       setTotal]       = useState(0);
+  const [page,        setPage]        = useState(1);
+  const [totalPages,  setTotalPages]  = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [search,     setSearch]     = useState(searchParams.get("search")   || "");
-  const [cuisine,    setCuisine]    = useState(searchParams.get("cuisine")  || "");
-  const [priceRange, setPriceRange] = useState(searchParams.get("price")   || "");
-  const [rating,     setRating]     = useState(searchParams.get("rating")  || "");
-  const [location,   setLocation]   = useState(searchParams.get("location")|| "");
+  const [search,     setSearch]     = useState(searchParams.get("search")    || "");
+  const [cuisine,    setCuisine]    = useState(searchParams.get("cuisine")   || "");
+  const [priceRange, setPriceRange] = useState(searchParams.get("price")    || "");
+  const [rating,     setRating]     = useState(searchParams.get("rating")   || "");
+  const [location,   setLocation]   = useState(searchParams.get("location") || "");
   const [isOpen,     setIsOpen]     = useState(false);
-  const [sort,       setSort]       = useState(searchParams.get("sort")    || "newest");
+  const [sort,       setSort]       = useState(searchParams.get("sort")     || "newest");
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -47,7 +47,7 @@ export default function ExplorePage() {
       const res  = await fetch(`/api/restaurants?${params.toString()}`);
       const data = await res.json();
       setRestaurants(data.restaurants || []);
-      setTotal(data.total || 0);
+      setTotal(data.total      || 0);
       setTotalPages(data.totalPages || 1);
       setPage(currentPage);
     } catch {
@@ -101,7 +101,7 @@ export default function ExplorePage() {
             </button>
           </div>
 
-          {/* Search bar */}
+          {/* Search */}
           <div className="relative max-w-xl">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
@@ -124,23 +124,14 @@ export default function ExplorePage() {
           {showFilters && (
             <div className="mt-4 p-4 rounded-2xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
-
-                {/* Cuisine */}
-                <select
-                  value={cuisine}
-                  onChange={(e) => setCuisine(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
-                >
+                <select value={cuisine} onChange={(e) => setCuisine(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer">
                   <option value="">All Cuisines</option>
                   {CUISINES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
 
-                {/* Price */}
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
-                >
+                <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer">
                   <option value="">Any Price</option>
                   <option value="1">$ Budget</option>
                   <option value="2">$$ Moderate</option>
@@ -148,34 +139,22 @@ export default function ExplorePage() {
                   <option value="4">$$$$ Fine Dining</option>
                 </select>
 
-                {/* Rating */}
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
-                >
+                <select value={rating} onChange={(e) => setRating(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer">
                   <option value="">Any Rating</option>
                   <option value="4.5">4.5+ Excellent</option>
                   <option value="4">4.0+ Very Good</option>
                   <option value="3.5">3.5+ Good</option>
                 </select>
 
-                {/* Location */}
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
-                >
+                <select value={location} onChange={(e) => setLocation(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer">
                   <option value="">All Locations</option>
                   {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
 
-                {/* Sort */}
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
-                >
+                <select value={sort} onChange={(e) => setSort(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer">
                   <option value="newest">Newest First</option>
                   <option value="rating">Top Rated</option>
                   <option value="price">Price: Low to High</option>
@@ -183,7 +162,6 @@ export default function ExplorePage() {
               </div>
 
               <div className="flex items-center justify-between">
-                {/* Open now toggle */}
                 <label className="flex items-center gap-2 cursor-pointer">
                   <div
                     onClick={() => setIsOpen(!isOpen)}
@@ -193,13 +171,10 @@ export default function ExplorePage() {
                   </div>
                   <span className="text-sm text-stone-600 dark:text-stone-400">Open now</span>
                 </label>
-
                 {hasFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-red-500 hover:text-red-600 cursor-pointer flex items-center gap-1"
-                  >
-                    <X size={13} /> Clear all filters
+                  <button onClick={clearFilters}
+                    className="text-sm text-red-500 hover:text-red-600 cursor-pointer flex items-center gap-1">
+                    <X size={13} /> Clear all
                   </button>
                 )}
               </div>
@@ -217,62 +192,52 @@ export default function ExplorePage() {
         ) : restaurants.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-4">🍽️</p>
-            <p className="text-lg font-medium text-stone-700 dark:text-stone-300 mb-2">
-              No restaurants found
-            </p>
-            <p className="text-stone-500 dark:text-stone-400 text-sm mb-6">
-              Try adjusting your filters or search term
-            </p>
-            <Button onClick={clearFilters} variant="outline">
-              Clear filters
-            </Button>
+            <p className="text-lg font-medium text-stone-700 dark:text-stone-300 mb-2">No restaurants found</p>
+            <p className="text-stone-500 text-sm mb-6">Try adjusting your filters</p>
+            <Button onClick={clearFilters} variant="outline">Clear filters</Button>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {restaurants.map((r) => (
-                <RestaurantCard key={r._id} restaurant={r} />
-              ))}
+              {restaurants.map((r) => <RestaurantCard key={r._id} restaurant={r} />)}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-10">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page === 1}
-                  onClick={() => fetchRestaurants(page - 1)}
-                >
-                  Previous
-                </Button>
+                <Button variant="outline" size="sm" disabled={page === 1}
+                  onClick={() => fetchRestaurants(page - 1)}>Previous</Button>
                 {Array.from({ length: totalPages }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => fetchRestaurants(i + 1)}
+                  <button key={i} onClick={() => fetchRestaurants(i + 1)}
                     className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-                      page === i + 1
-                        ? "text-white"
-                        : "border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:border-[var(--color-primary)]"
+                      page === i + 1 ? "text-white" : "border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400"
                     }`}
-                    style={page === i + 1 ? { backgroundColor: "var(--color-primary)" } : {}}
-                  >
+                    style={page === i + 1 ? { backgroundColor: "var(--color-primary)" } : {}}>
                     {i + 1}
                   </button>
                 ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page === totalPages}
-                  onClick={() => fetchRestaurants(page + 1)}
-                >
-                  Next
-                </Button>
+                <Button variant="outline" size="sm" disabled={page === totalPages}
+                  onClick={() => fetchRestaurants(page + 1)}>Next</Button>
               </div>
             )}
           </>
         )}
       </div>
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen pt-20 bg-[var(--color-warm)] dark:bg-stone-950">
+        <div className="container-pad py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        </div>
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   );
 }

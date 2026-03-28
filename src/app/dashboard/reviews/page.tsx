@@ -1,8 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import StarRating from "@/components/ui/StarRating";
-import { formatDate } from "@/lib/utils";
 
 interface Review {
   _id: string;
@@ -13,7 +10,7 @@ interface Review {
 }
 
 export default function ReviewsPage() {
-  const { userId }            = useAuth();
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
