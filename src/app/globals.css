@@ -41,3 +41,15 @@
     .section-pad { padding-block: 5rem; }
   }
 }
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  img {
+    max-width: 100%;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
