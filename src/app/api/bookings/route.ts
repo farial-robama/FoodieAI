@@ -7,15 +7,20 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
-    const clerkId = searchParams.get("clerkId");
+    const clerkId      = searchParams.get("clerkId");
     const restaurantId = searchParams.get("restaurantId");
 
     const query: Record<string, unknown> = {};
 
     if (clerkId) {
       const user = await User.findOne({ clerkId });
-      if (user) query.userId = user._id;
+      if (!user) {
+        // User not found — return empty bookings instead of error
+        return NextResponse.json({ bookings: [] });
+      }
+      query.userId = user._id;
     }
+
     if (restaurantId) query.restaurantId = restaurantId;
 
     const bookings = await Booking.find(query)
@@ -24,8 +29,9 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({ bookings });
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
+  } catch (error) {
+    console.error("Bookings GET error:", error);
+    return NextResponse.json({ bookings: [] });
   }
 }
 
@@ -35,23 +41,31 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { clerkId, restaurantId, date, time, guests, specialRequest } = body;
 
-    const user = await User.findOne({ clerkId });
+    let user = await User.findOne({ clerkId });
+
+    // Auto-create user if not exists
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      user = await User.create({
+        clerkId,
+        name:  "User",
+        email: "",
+        role:  "user",
+      });
     }
 
     const booking = await Booking.create({
-      userId: user._id,
+      userId:         user._id,
       restaurantId,
       date,
       time,
       guests,
       specialRequest,
-      status: "confirmed",
+      status:         "confirmed",
     });
 
     return NextResponse.json({ booking }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("Bookings POST error:", error);
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
   }
 }

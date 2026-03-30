@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Calendar, Star, Heart, ArrowRight } from "lucide-react";
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -19,46 +19,37 @@ interface Booking {
 }
 
 export default function DashboardPage() {
-  const { userId }          = useAuth();
+  const { userId } = useAuth();
+  const { user }   = useUser();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading,  setLoading]  = useState(true);
 
-//   useEffect(() => {
-//     if (!userId) return;
-//     fetch(`/api/bookings?clerkId=${userId}`)
-//       .then((r) => r.json())
-//       .then((d) => {
-//         setBookings(d.bookings || []);
-//         setLoading(false);
-//       })
-//       .catch(() => setLoading(false));
-//   }, [userId]);
 
 useEffect(() => {
-  if (!userId) return;
+  if (!userId || !user) return;
 
-  const loadBookings = async () => {
-    try {
-      // First ensure user exists in MongoDB
-      await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clerkId: userId, name: "User", email: "", role: "user" }),
-      });
+  const init = async () => {
+    
+    await fetch("/api/users", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkId: userId,
+        name:    user.fullName || "User",
+        email:   user.primaryEmailAddress?.emailAddress || "",
+        avatar:  user.imageUrl || "",
+      }),
+    });
 
-      // Then fetch bookings
-      const res  = await fetch(`/api/bookings?clerkId=${userId}`);
-      const data = await res.json();
-      setBookings(data.bookings || []);
-    } catch {
-      console.error("Failed to load bookings");
-    } finally {
-      setLoading(false);
-    }
+    // Fetch bookings
+    const res  = await fetch(`/api/bookings?clerkId=${userId}`);
+    const data = await res.json();
+    setBookings(data.bookings || []);
+    setLoading(false);
   };
 
-  loadBookings();
-}, [userId]);
+  init();
+}, [userId, user]);
 
   return (
     <div className="space-y-6">

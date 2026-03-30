@@ -10,19 +10,19 @@ import {
 import { cn } from "@/lib/utils";
 
 const userNav = [
-  { label: "Overview",   href: "/dashboard",          icon: LayoutDashboard },
-  { label: "Bookings",   href: "/dashboard/bookings", icon: Calendar },
-  { label: "Reviews",    href: "/dashboard/reviews",  icon: Star },
-  { label: "Saved",      href: "/dashboard/saved",    icon: Heart },
-  { label: "Profile",    href: "/dashboard/profile",  icon: User },
+  { label: "Overview",    href: "/dashboard",          icon: LayoutDashboard },
+  { label: "Bookings",    href: "/dashboard/bookings", icon: Calendar },
+  { label: "Reviews",     href: "/dashboard/reviews",  icon: Star },
+  { label: "Saved",       href: "/dashboard/saved",    icon: Heart },
+  { label: "Profile",     href: "/dashboard/profile",  icon: User },
 ];
 
 const adminNav = [
-  { label: "Analytics",   href: "/dashboard/admin",              icon: BarChart2 },
-  { label: "Restaurants", href: "/dashboard/admin/restaurants",  icon: UtensilsCrossed },
-  { label: "Users",       href: "/dashboard/admin/users",        icon: Users },
-  { label: "Bookings",    href: "/dashboard/admin/bookings",     icon: Calendar },
-  { label: "Settings",    href: "/dashboard/admin/settings",     icon: Settings },
+  { label: "Analytics",   href: "/dashboard/admin",             icon: BarChart2 },
+  { label: "Restaurants", href: "/dashboard/admin/restaurants", icon: UtensilsCrossed },
+  { label: "Users",       href: "/dashboard/admin/users",       icon: Users },
+  { label: "Bookings",    href: "/dashboard/admin/bookings",    icon: Calendar },
+  { label: "Settings",    href: "/dashboard/admin/settings",    icon: Settings },
 ];
 
 export default function Sidebar({
@@ -32,23 +32,51 @@ export default function Sidebar({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const pathname          = usePathname();
-  const { userId }        = useAuth();
+  const pathname              = usePathname();
+  const { userId, isLoaded }  = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const checkRole = async () => {
-      if (!userId) return;
-      try {
-        const res  = await fetch(`/api/users?clerkId=${userId}`);
-        const data = await res.json();
-        setIsAdmin(data.user?.role === "admin");
-      } catch {}
-    };
-    checkRole();
-  }, [userId]);
+    if (!isLoaded) return;
+    if (!userId) {
+      setChecked(true);
+      return;
+    }
 
-  const navLinks = isAdmin ? [...userNav, ...adminNav] : userNav;
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    const tryFetch = async () => {
+      try {
+        const res = await fetch(`/api/users?clerkId=${userId}`);
+
+        if (!res.ok) {
+          // Retry if failed
+          if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(tryFetch, 1000);
+          }
+          return;
+        }
+
+        const data = await res.json();
+        console.log("User role:", data.user?.role);
+
+        if (data.user?.role === "admin") {
+          setIsAdmin(true);
+        }
+        setChecked(true);
+      } catch {
+        if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryFetch, 1000);
+        }
+      }
+    };
+
+    tryFetch();
+  }, [userId, isLoaded]);
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
@@ -79,20 +107,18 @@ export default function Sidebar({
           className="text-xs font-medium px-2.5 py-1 rounded-full"
           style={{
             backgroundColor: isAdmin ? "#FAECE7" : "#E1F5EE",
-            color: isAdmin ? "#712B13" : "#085041",
+            color:           isAdmin ? "#712B13" : "#085041",
           }}
         >
-          {isAdmin ? "Admin" : "User"}
+          {!checked ? "Loading..." : isAdmin ? "Admin" : "User"}
         </span>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-        {isAdmin && (
-          <p className="text-xs font-medium text-stone-400 uppercase tracking-wide px-3 py-2">
-            My Account
-          </p>
-        )}
+        <p className="text-xs font-medium text-stone-400 uppercase tracking-wide px-3 py-2">
+          My Account
+        </p>
         {userNav.map(({ label, href, icon: Icon }) => (
           <Link
             key={href}
@@ -143,7 +169,10 @@ export default function Sidebar({
           href="/"
           className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
           Back to Website
         </Link>
       </div>
@@ -152,26 +181,21 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 fixed top-0 left-0 h-full z-40">
         <NavContent />
       </aside>
 
       {/* Mobile overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
       )}
 
       {/* Mobile sidebar */}
-      <aside
-        className={cn(
-          "fixed top-0 left-0 h-full w-64 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 z-50 lg:hidden transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <aside className={cn(
+        "fixed top-0 left-0 h-full w-64 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 z-50 lg:hidden transition-transform duration-300",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <NavContent />
       </aside>
     </>
