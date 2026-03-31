@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
-import Restaurant from "../models/Restaurant";
+import Restaurant from "../src/models/Restaurant";
 
 const restaurants = [
   {
@@ -34,7 +34,7 @@ const restaurants = [
     description: "Authentic Japanese cuisine with fresh sushi, ramen, and teppanyaki prepared by a Japanese chef.",
     cuisine: "Japanese", priceRange: 3, rating: 4.6, reviewCount: 156,
     location: "Dhaka", address: "Gulshan 2, Dhaka",
-    images: ["https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=800"],
+    images: ["https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800"],
     isOpen: true, openingHours: { open: "12:00", close: "22:30" }, featured: true,
     menu: [
       { name: "Salmon Sushi (8pc)", description: "Fresh Atlantic salmon nigiri", price: 650, category: "Sushi" },

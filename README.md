@@ -306,7 +306,7 @@ All AI features use **OpenRouter API** with the free `mistralai/mistral-7b-instr
 ## 👤 Author
 
 **Farial Robama**
-- GitHub: [@farial-robama](https://github.com/farial-robama)
+- GitHub: [farial-robama](https://github.com/farial-robama)
 - Email: farialrobama15@gmail.com
 
 ---
