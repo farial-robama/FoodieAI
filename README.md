@@ -16,7 +16,7 @@
 
 **Live URL:** [https://foodie-ai-mu.vercel.app/](https://foodie-ai-mu.vercel.app/)
 
-**GitHub:** [https://github.com/farial-robama/Foodie_ai](https://github.com/farial-robama/Foodie_ai)
+**GitHub:** [https://github.com/farial-robama/FoodieAI](https://github.com/farial-robama/FoodieAI)
 
 ---
 
@@ -76,17 +76,35 @@
 
 ## 🛠️ Tech Stack
 
-| Layer       | Technology                          |
-|-------------|-------------------------------------|
-| Framework   | Next.js 16 (App Router)             |
-| Language    | TypeScript                          |
-| Styling     | Tailwind CSS v4                     |
-| Database    | MongoDB Atlas + Mongoose            |
-| Auth        | Clerk (Google OAuth + Email)        |
-| AI          | OpenRouter API (Mistral 7B free)    |
-| Charts      | Recharts                            |
-| Forms       | React Hook Form + Zod               |
-| Deployment  | Vercel                              |
+### 🎨 Frontend
+ 
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js** | 16.2.1 | React framework — App Router, SSR, SSG, API routes |
+| **React** | 19 | UI component library |
+| **TypeScript** | 5.0 | Static typing and type safety across entire codebase |
+| **Tailwind CSS** | v4 | Utility-first CSS with custom `@theme` color variables |
+| **Framer Motion** | latest | Page animations, hover effects, transitions |
+| **Lucide React** | 0.460.0 | Consistent icon library (500+ icons) |
+| **Recharts** | latest | Bar chart, Line chart, Pie chart for admin analytics |
+| **React Hook Form** | latest | Form state management with minimal re-renders |
+| **Zod** | latest | Schema-based form validation |
+| **@hookform/resolvers** | latest | Bridge between Zod schemas and React Hook Form |
+| **clsx** | latest | Conditional className utility |
+| **tailwind-merge** | latest | Merge Tailwind classes without conflicts |
+| **Geist Font** | built-in | Primary typography — Geist Sans + Geist Mono |
+ 
+### ⚙️ Backend
+ 
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js API Routes** | 16.2.1 | REST API with App Router route handlers |
+| **MongoDB Atlas** | cloud | NoSQL cloud database with automatic scaling |
+| **Mongoose** | latest | MongoDB ODM — schemas, models, validation, population |
+| **Clerk** | latest | Auth — JWT sessions, Google OAuth, user management |
+| **OpenRouter API** | — | Free AI inference — routes to Mistral 7B model |
+| **Axios** | latest | HTTP client for server-side API calls |
+| **dotenv** | latest | Environment variable loading for scripts |
 
 ---
 
