@@ -179,21 +179,21 @@ Create a `.env.local` file in the root:
 
 ```env
 # MongoDB
-MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster0.xxxxx.mongodb.net/foodieai
+MONGODB_URI
 
 # Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxx
-CLERK_SECRET_KEY=sk_test_xxxxxxxxxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/register
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 
 # OpenRouter AI
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxx
+OPENROUTER_API_KEY
 
 # App URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL
 ```
 
 ### 4. Seed the database
@@ -225,7 +225,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## 📸 Screenshots
 
 ### Landing Page
-![Landing](/food-ai-1.png)
+![Landing](./public/food-ai-1.png)
 
 ### Explore Page
 Browse 1,200+ restaurants with advanced filters and AI-powered search.
