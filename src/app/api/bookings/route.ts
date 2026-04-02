@@ -14,10 +14,7 @@ export async function GET(req: NextRequest) {
 
     if (clerkId) {
       const user = await User.findOne({ clerkId });
-      if (!user) {
-        // User not found — return empty bookings instead of error
-        return NextResponse.json({ bookings: [] });
-      }
+      if (!user) return NextResponse.json({ bookings: [] });
       query.userId = user._id;
     }
 
@@ -25,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     const bookings = await Booking.find(query)
       .populate("restaurantId", "name images location cuisine")
+      .populate("userId", "name email")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -41,18 +39,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { clerkId, restaurantId, date, time, guests, specialRequest } = body;
 
+    // Find user
     let user = await User.findOne({ clerkId });
-
-    // Auto-create user if not exists
     if (!user) {
-      user = await User.create({
-        clerkId,
-        name:  "User",
-        email: "",
-        role:  "user",
-      });
+      user = await User.create({ clerkId, name: "User", email: "", role: "user" });
     }
 
+    
+    if (user.role === "admin") {
+      return NextResponse.json(
+        { error: "Admins cannot make bookings. Please use a user account." },
+        { status: 403 }
+      );
+    }
+
+   
     const booking = await Booking.create({
       userId:         user._id,
       restaurantId,
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
       time,
       guests,
       specialRequest,
-      status:         "confirmed",
+      status:         "pending", 
     });
 
     return NextResponse.json({ booking }, { status: 201 });

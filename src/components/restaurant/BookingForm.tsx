@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, Users, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
 import { IRestaurant } from "@/types";
 import Button from "@/components/ui/Button";
 
 export default function BookingForm({ restaurant }: { restaurant: IRestaurant }) {
   const { isSignedIn, userId } = useAuth();
-  const router = useRouter();
+  const router  = useRouter();
   const [date,    setDate]    = useState("");
   const [time,    setTime]    = useState("");
   const [guests,  setGuests]  = useState(2);
@@ -16,18 +16,34 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState("");
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  const timeSlots = ["11:00", "12:00", "13:00", "14:00", "18:00", "19:00", "20:00", "21:00"];
+  // Check if user is admin
+  useState(() => {
+    if (!userId) return;
+    fetch(`/api/users?clerkId=${userId}`)
+      .then(r => r.json())
+      .then(d => setIsAdmin(d.user?.role === "admin"))
+      .catch(() => setIsAdmin(false));
+  });
+
+  const timeSlots = [
+    "11:00", "12:00", "13:00", "14:00",
+    "18:00", "19:00", "20:00", "21:00",
+  ];
 
   const handleBook = async () => {
     if (!isSignedIn) { router.push("/login"); return; }
-    if (!date || !time) { setError("Please select date and time"); return; }
+    if (isAdmin) { setError("Admins cannot make bookings. Use a user account."); return; }
+    if (!date)   { setError("Please select a date"); return; }
+    if (!time)   { setError("Please select a time"); return; }
 
     setLoading(true);
     setError("");
+
     try {
       const res = await fetch("/api/bookings", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clerkId:        userId,
@@ -36,8 +52,15 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
           specialRequest: note,
         }),
       });
-      if (res.ok) setSuccess(true);
-      else        setError("Booking failed. Please try again.");
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Booking failed. Please try again.");
+        return;
+      }
+
+      setSuccess(true);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -45,18 +68,46 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
     }
   };
 
+  if (isAdmin) {
+    return (
+      <div className="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800">
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+          <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
+              Admin accounts cannot make bookings
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+              To test bookings, sign in with a regular user account. Admins manage bookings from the dashboard.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
   if (success) {
     return (
       <div className="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 text-center">
-        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-3">
-          <CheckCircle2 size={24} className="text-green-600 dark:text-green-400" />
+        <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
+          <CheckCircle2 size={24} className="text-amber-600 dark:text-amber-400" />
         </div>
-        <p className="font-semibold text-stone-900 dark:text-white mb-1">Booking Confirmed!</p>
-        <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
+        <p className="font-semibold text-stone-900 dark:text-white mb-1">
+          Booking Request Sent!
+        </p>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mb-1">
           Table for {guests} on {date} at {time}
         </p>
-        <Button variant="outline" size="sm" onClick={() => setSuccess(false)}>
-          Book Another Table
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium mt-2 mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+          Pending admin approval
+        </div>
+        <p className="text-xs text-stone-400 mb-4">
+          You will be notified once the restaurant confirms your booking.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => { setSuccess(false); setDate(""); setTime(""); }}>
+          Make Another Booking
         </Button>
       </div>
     );
@@ -64,9 +115,12 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
 
   return (
     <div className="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800">
-      <h3 className="font-semibold text-stone-900 dark:text-white mb-5">
+      <h3 className="font-semibold text-stone-900 dark:text-white mb-1">
         Reserve a Table
       </h3>
+      <p className="text-xs text-stone-400 mb-5">
+        Requests are reviewed and confirmed by the restaurant
+      </p>
 
       <div className="space-y-4">
         {/* Date */}
@@ -144,7 +198,11 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
           />
         </div>
 
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && (
+          <p className="text-xs text-red-500 flex items-center gap-1">
+            <AlertCircle size={12} /> {error}
+          </p>
+        )}
 
         <Button
           onClick={handleBook}
@@ -153,8 +211,12 @@ export default function BookingForm({ restaurant }: { restaurant: IRestaurant })
           loading={loading}
           className="w-full"
         >
-          {isSignedIn ? "Confirm Booking" : "Login to Book"}
+          {!isSignedIn ? "Login to Book" : "Request Booking"}
         </Button>
+
+        <p className="text-xs text-stone-400 text-center">
+          Your request will be reviewed by the restaurant
+        </p>
       </div>
     </div>
   );
