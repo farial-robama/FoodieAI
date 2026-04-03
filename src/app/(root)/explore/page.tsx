@@ -20,13 +20,40 @@ function ExploreContent() {
   const [totalPages,  setTotalPages]  = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [search,     setSearch]     = useState(searchParams.get("search")    || "");
-  const [cuisine,    setCuisine]    = useState(searchParams.get("cuisine")   || "");
-  const [priceRange, setPriceRange] = useState(searchParams.get("price")    || "");
-  const [rating,     setRating]     = useState(searchParams.get("rating")   || "");
-  const [location,   setLocation]   = useState(searchParams.get("location") || "");
-  const [isOpen,     setIsOpen]     = useState(false);
-  const [sort,       setSort]       = useState(searchParams.get("sort")     || "newest");
+  // const [search,     setSearch]     = useState(searchParams.get("search")    || "");
+  // const [cuisine,    setCuisine]    = useState(searchParams.get("cuisine")   || "");
+  // const [priceRange, setPriceRange] = useState(searchParams.get("price")    || "");
+  // const [rating,     setRating]     = useState(searchParams.get("rating")   || "");
+  // const [location,   setLocation]   = useState(searchParams.get("location") || "");
+  // const [isOpen,     setIsOpen]     = useState(false);
+  // const [sort,       setSort]       = useState(searchParams.get("sort")     || "newest");
+  const [search,     setSearch]     = useState("");
+const [cuisine,    setCuisine]    = useState("");
+const [priceRange, setPriceRange] = useState("");
+const [rating,     setRating]     = useState("");
+const [location,   setLocation]   = useState("");
+const [isOpen,     setIsOpen]     = useState(false);
+const [sort,       setSort]       = useState("newest");
+
+
+useEffect(() => {
+  setSearch(searchParams.get("search")    || "");
+  setCuisine(searchParams.get("cuisine")  || "");
+  setPriceRange(searchParams.get("price") || "");
+  setRating(searchParams.get("rating")    || "");
+  setLocation(searchParams.get("location")|| "");
+  setSort(searchParams.get("sort")        || "newest");
+
+  if (
+    searchParams.get("cuisine") ||
+    searchParams.get("price")   ||
+    searchParams.get("rating")  ||
+    searchParams.get("location")
+  ) {
+    setShowFilters(true);
+  }
+
+}, [searchParams]);
 
   const debouncedSearch = useDebounce(search, 400);
 
