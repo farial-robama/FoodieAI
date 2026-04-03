@@ -145,7 +145,7 @@ const restaurants = [
     description: "Authentic Turkish kebabs, mezze platters, and baklava in a warm, Mediterranean atmosphere.",
     cuisine: "Turkish", priceRange: 2, rating: 4.4, reviewCount: 98,
     location: "Chittagong", address: "Agrabad, Chittagong",
-    images: ["https://images.unsplash.com/photo-1529006557810-274c89f23df6?w=800"],
+    images: ["https://images.unsplash.com/photo-1544025162-d76694265947?w=800"],
     isOpen: true, openingHours: { open: "12:00", close: "23:00" }, featured: false,
     menu: [
       { name: "Adana Kebab",   description: "Spiced minced lamb on skewer",       price: 420, category: "Kebabs" },
@@ -158,7 +158,7 @@ const restaurants = [
     description: "Vibrant Mexican restaurant with street-style tacos, nachos, and fresh guacamole.",
     cuisine: "Mexican", priceRange: 1, rating: 4.3, reviewCount: 211,
     location: "Dhaka", address: "Uttara Sector 7, Dhaka",
-    images: ["https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800"],
+    images: ["https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=800"],
     isOpen: true, openingHours: { open: "11:00", close: "23:00" }, featured: false,
     menu: [
       { name: "Chicken Tacos (3pc)", description: "Grilled chicken with salsa and guac",  price: 280, category: "Tacos" },
@@ -184,7 +184,7 @@ const restaurants = [
     description: "Modern Japanese sushi bar with omakase options, fresh sashimi, and premium sake selection.",
     cuisine: "Japanese", priceRange: 4, rating: 4.9, reviewCount: 87,
     location: "Dhaka", address: "Gulshan 2 Circle, Dhaka",
-    images: ["https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=800"],
+    images: ["https://images.unsplash.com/photo-1553621042-f6e147245754?w=800"],
     isOpen: true, openingHours: { open: "13:00", close: "22:00" }, featured: true,
     menu: [
       { name: "Omakase Set (12pc)", description: "Chef's selection of premium nigiri",    price: 1800, category: "Omakase" },

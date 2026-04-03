@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Star, Heart, ArrowRight } from "lucide-react";
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -21,36 +22,55 @@ interface Booking {
 export default function DashboardPage() {
   const { userId } = useAuth();
   const { user }   = useUser();
+  const router     = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading,  setLoading]  = useState(true);
+  const [roleChecked, setRoleChecked] = useState(false);
+  const [isAdmin,     setIsAdmin]     = useState(false);
 
+  useEffect(() => {
+    if (!userId || !user) return;
 
-useEffect(() => {
-  if (!userId || !user) return;
+    const init = async () => {
+      // Sync user and get role
+      const syncRes  = await fetch("/api/users", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clerkId: userId,
+          name:    user.fullName || "User",
+          email:   user.primaryEmailAddress?.emailAddress || "",
+          avatar:  user.imageUrl || "",
+        }),
+      });
+      const syncData = await syncRes.json();
 
-  const init = async () => {
-    
-    await fetch("/api/users", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clerkId: userId,
-        name:    user.fullName || "User",
-        email:   user.primaryEmailAddress?.emailAddress || "",
-        avatar:  user.imageUrl || "",
-      }),
-    });
+      if (syncData.user?.role === "admin") {
+        router.replace("/dashboard/admin");
+        return; // stop here for admin
+      }
 
-    // Fetch bookings
-    const res  = await fetch(`/api/bookings?clerkId=${userId}`);
-    const data = await res.json();
-    setBookings(data.bookings || []);
-    setLoading(false);
-  };
+      // Only runs for regular users
+      setRoleChecked(true);
+      const res  = await fetch(`/api/bookings?clerkId=${userId}`);
+      const data = await res.json();
+      setBookings(data.bookings || []);
+      setLoading(false);
+    };
 
-  init();
-}, [userId, user]);
+    init();
+  }, [userId, user, router]);
 
+  // Show spinner while checking role
+  if (!roleChecked) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-6 h-6 border-2 border-stone-300 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Everything below only renders for regular users
   return (
     <div className="space-y-6">
       <div>
@@ -136,11 +156,7 @@ useEffect(() => {
               <div key={b._id} className="flex items-center gap-4 p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors">
                 <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 overflow-hidden flex-shrink-0">
                   {b.restaurantId?.images?.[0] && (
-                    <img
-                      src={b.restaurantId.images[0]}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={b.restaurantId.images[0]} alt="" className="w-full h-full object-cover" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
