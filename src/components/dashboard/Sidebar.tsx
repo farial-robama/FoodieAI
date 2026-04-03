@@ -27,7 +27,7 @@ const userNav = [
 
 const getFilteredUserNav = (isAdmin: boolean) =>
   isAdmin
-    ? userNav.filter(({ label }) => label === "Overview" || label === "Profile")
+    ? userNav.filter(({ label }) => label === "Profile")
     : userNav;
 
 const adminNav = [

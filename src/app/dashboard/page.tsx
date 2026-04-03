@@ -1,9 +1,11 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Star, Heart, ArrowRight } from "lucide-react";
+
 import StatsCard from "@/components/dashboard/StatsCard";
 import Badge from "@/components/ui/Badge";
 
@@ -21,47 +23,57 @@ interface Booking {
 
 export default function DashboardPage() {
   const { userId } = useAuth();
-  const { user }   = useUser();
-  const router     = useRouter();
+  const { user } = useUser();
+  const router = useRouter();
+
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading,  setLoading]  = useState(true);
+  const [loading, setLoading] = useState(true);
   const [roleChecked, setRoleChecked] = useState(false);
-  const [isAdmin,     setIsAdmin]     = useState(false);
 
   useEffect(() => {
     if (!userId || !user) return;
 
     const init = async () => {
-      // Sync user and get role
-      const syncRes  = await fetch("/api/users", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clerkId: userId,
-          name:    user.fullName || "User",
-          email:   user.primaryEmailAddress?.emailAddress || "",
-          avatar:  user.imageUrl || "",
-        }),
-      });
-      const syncData = await syncRes.json();
+      try {
+        // Sync user to database
+        const syncRes = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clerkId: userId,
+            name: user.fullName || "User",
+            email: user.primaryEmailAddress?.emailAddress || "",
+            avatar: user.imageUrl || "",
+          }),
+        });
 
-      if (syncData.user?.role === "admin") {
-        router.replace("/dashboard/admin");
-        return; // stop here for admin
+        const syncData = await syncRes.json();
+        const role = syncData.user?.role;
+
+        setRoleChecked(true);
+
+        // Redirect admin
+        if (role === "admin") {
+          router.replace("/dashboard/admin");
+          return;
+        }
+
+        // Fetch user bookings
+        const res = await fetch(`/api/bookings?clerkId=${userId}`);
+        const data = await res.json();
+
+        setBookings(data.bookings || []);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+        setRoleChecked(true);
       }
-
-      // Only runs for regular users
-      setRoleChecked(true);
-      const res  = await fetch(`/api/bookings?clerkId=${userId}`);
-      const data = await res.json();
-      setBookings(data.bookings || []);
-      setLoading(false);
     };
 
     init();
   }, [userId, user, router]);
 
-  // Show spinner while checking role
   if (!roleChecked) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -70,9 +82,9 @@ export default function DashboardPage() {
     );
   }
 
-  // Everything below only renders for regular users
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-stone-900 dark:text-white">
           My Dashboard
@@ -92,6 +104,7 @@ export default function DashboardPage() {
           change="+2 this month"
           positive
         />
+
         <StatsCard
           title="Confirmed"
           value={bookings.filter((b) => b.status === "confirmed").length}
@@ -100,6 +113,7 @@ export default function DashboardPage() {
           change="Active"
           positive
         />
+
         <StatsCard
           title="Reviews Given"
           value={0}
@@ -108,6 +122,7 @@ export default function DashboardPage() {
           change="This month"
           positive
         />
+
         <StatsCard
           title="Saved Places"
           value={0}
@@ -124,6 +139,7 @@ export default function DashboardPage() {
           <h2 className="font-semibold text-stone-900 dark:text-white">
             Recent Bookings
           </h2>
+
           <Link
             href="/dashboard/bookings"
             className="text-sm flex items-center gap-1"
@@ -136,12 +152,16 @@ export default function DashboardPage() {
         {loading ? (
           <div className="p-5 space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 rounded-xl bg-stone-100 dark:bg-stone-800 animate-pulse" />
+              <div
+                key={i}
+                className="h-14 rounded-xl bg-stone-100 dark:bg-stone-800 animate-pulse"
+              />
             ))}
           </div>
         ) : bookings.length === 0 ? (
           <div className="p-10 text-center">
             <p className="text-stone-400 text-sm mb-3">No bookings yet</p>
+
             <Link
               href="/explore"
               className="text-sm font-medium"
@@ -153,24 +173,37 @@ export default function DashboardPage() {
         ) : (
           <div className="divide-y divide-stone-100 dark:divide-stone-800">
             {bookings.slice(0, 5).map((b) => (
-              <div key={b._id} className="flex items-center gap-4 p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors">
+              <div
+                key={b._id}
+                className="flex items-center gap-4 p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+              >
                 <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 overflow-hidden flex-shrink-0">
                   {b.restaurantId?.images?.[0] && (
-                    <img src={b.restaurantId.images[0]} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={b.restaurantId.images[0]}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   )}
                 </div>
+
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-stone-900 dark:text-white text-sm truncate">
                     {b.restaurantId?.name || "Restaurant"}
                   </p>
+
                   <p className="text-xs text-stone-500 dark:text-stone-400">
                     {b.date} at {b.time} · {b.guests} guests
                   </p>
                 </div>
+
                 <Badge
                   variant={
-                    b.status === "confirmed" ? "secondary" :
-                    b.status === "cancelled" ? "danger" : "warning"
+                    b.status === "confirmed"
+                      ? "secondary"
+                      : b.status === "cancelled"
+                      ? "danger"
+                      : "warning"
                   }
                 >
                   {b.status}
