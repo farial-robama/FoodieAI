@@ -54,6 +54,7 @@ export default function ProfilePage() {
     setImageUploading(true);
     try {
       await user.setProfileImage({ file });
+      await user.reload();
     } catch (err) {
       console.error("Image upload failed:", err);
     } finally {
