@@ -1,25 +1,24 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import "@/models/Restaurant";
 
-// GET /api/saved?clerkId=xxx
+// GET /api/saved
 export async function GET(req: NextRequest) {
   try {
-    await connectDB();
+    const { userId } = await auth();
 
-    const clerkId = req.nextUrl.searchParams.get("clerkId");
-
-    if (!clerkId) {
-      return NextResponse.json(
-        { error: "Missing clerkId" },
-        { status: 400 }
-      );
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ clerkId })
+    await connectDB();
+
+    const user = await User.findOne({ clerkId: userId })
       .populate(
         "savedRestaurants",
         "name cuisine images rating reviewCount location priceRange isOpen openingHours description"
@@ -35,7 +34,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : null,
+        ...(process.env.NODE_ENV !== "production" && {
+          stack: error instanceof Error ? error.stack : null,
+        }),
       },
       { status: 500 }
     );
@@ -45,39 +46,48 @@ export async function GET(req: NextRequest) {
 // POST /api/saved — toggles save/unsave
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
+    const { userId } = await auth();
 
-    const { clerkId, restaurantId } = await req.json();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!clerkId || !restaurantId) {
+    const { restaurantId } = await req.json();
+
+    if (!restaurantId || typeof restaurantId !== "string") {
       return NextResponse.json(
-        { error: "Missing fields" },
+        { error: "Missing or invalid restaurantId" },
         { status: 400 }
       );
     }
 
-    const user = await User.findOne({ clerkId });
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+      return NextResponse.json(
+        { error: "Invalid restaurantId" },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    const user = await User.findOne({ clerkId: userId }).select(
+      "savedRestaurants"
+    );
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const alreadySaved = user.savedRestaurants?.some(
       (id: any) => id.toString() === restaurantId
     );
 
-    if (alreadySaved) {
-      user.savedRestaurants = user.savedRestaurants.filter(
-        (id: any) => id.toString() !== restaurantId
-      );
-    } else {
-      user.savedRestaurants = [...(user.savedRestaurants || []), restaurantId];
-    }
-
-    await user.save();
+    await User.updateOne(
+      { _id: user._id },
+      alreadySaved
+        ? { $pull: { savedRestaurants: restaurantId } }
+        : { $addToSet: { savedRestaurants: restaurantId } }
+    );
 
     return NextResponse.json({
       saved: !alreadySaved,
@@ -88,7 +98,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : null,
+        ...(process.env.NODE_ENV !== "production" && {
+          stack: error instanceof Error ? error.stack : null,
+        }),
       },
       { status: 500 }
     );
