@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
             process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.3-70b-instruct:free",
+          model: "openrouter/free",
           messages: [
             {
               role: "user",
