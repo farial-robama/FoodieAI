@@ -1,36 +1,8 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Clock } from "lucide-react";
-
-const posts = [
-  {
-    title: "Top 10 Biryani Spots in Dhaka You Must Try in 2025",
-    excerpt: "From old Dhaka classics to modern fusion takes, we round up the best biryani restaurants that are worth every bite.",
-    image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop",
-    date: "Mar 15, 2025",
-    readTime: "5 min read",
-    category: "Bengali",
-    slug: "top-biryani-spots-dhaka",
-  },
-  {
-    title: "The Rise of Japanese Cuisine in Bangladesh",
-    excerpt: "Japanese food is taking Dhaka by storm. We explore why sushi and ramen have become the go-to choice for young food lovers.",
-    image: "https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=600&auto=format&fit=crop",
-    date: "Mar 10, 2025",
-    readTime: "4 min read",
-    category: "Japanese",
-    slug: "japanese-cuisine-bangladesh",
-  },
-  {
-    title: "How to Plan the Perfect Dinner Date Using FoodieAI",
-    excerpt: "Let our AI assistant do the work. Here's a step-by-step guide to planning a flawless romantic dinner with zero stress.",
-    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop",
-    date: "Mar 5, 2025",
-    readTime: "3 min read",
-    category: "Tips",
-    slug: "plan-perfect-dinner-date",
-  },
-];
+import { posts } from "@/lib/blog-posts";
 
 export default function BlogPreview() {
   return (
@@ -62,13 +34,15 @@ export default function BlogPreview() {
               className="group flex flex-col rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-950 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
             >
               <div className="relative h-48 overflow-hidden">
-                <img
+                <Image
                   src={post.image}
                   alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <span
-                  className="absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full text-white"
+                  className="absolute top-3 left-3 z-10 text-xs font-medium px-2.5 py-1 rounded-full text-white"
                   style={{ backgroundColor: "var(--color-primary)" }}
                 >
                   {post.category}
