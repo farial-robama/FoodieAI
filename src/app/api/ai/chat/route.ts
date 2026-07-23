@@ -48,6 +48,7 @@ Keep responses under 100 words.`,
         {
           message:
             "I'm having trouble connecting right now. Please try again in a moment.",
+            debug: errorData,
         },
         { status: 200 },
       );
