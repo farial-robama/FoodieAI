@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
           "X-Title": "FoodieAI",
         },
         body: JSON.stringify({
-          model: "qwen/qwen3.6-plus:free",
+          model: "poolside/laguna-s-2.1:free",
           messages: [
             {
               role: "system",

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         },
         body: JSON.stringify({
-          model: "qwen/qwen3.6-plus:free",
+          model: "poolside/laguna-s-2.1:free",
           messages: [
             {
               role: "user",
