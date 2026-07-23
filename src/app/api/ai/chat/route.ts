@@ -24,10 +24,6 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           model: "poolside/laguna-s-2.1:free",
-          models: [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "nvidia/nemotron-3-super-120b:free",
-          ],
           messages: [
             {
               role: "system",
@@ -52,6 +48,7 @@ Keep responses under 100 words.`,
         {
           message:
             "I'm having trouble connecting right now. Please try again in a moment.",
+          debug: errorData,
         },
         { status: 200 },
       );
