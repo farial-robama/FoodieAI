@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
             process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         },
         body: JSON.stringify({
-          model: "poolside/laguna-s-2.1:free",
+          model: "meta-llama/llama-3.3-70b-instruct:free",
           messages: [
             {
               role: "user",
